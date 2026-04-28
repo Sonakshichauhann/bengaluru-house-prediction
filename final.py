@@ -6,9 +6,7 @@ from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score, mean_absolute_error
 
-# -------------------------------
 # Data Cleaning + Feature Engineering
-# -------------------------------
 def clean_and_engineer_data(df):
     df = df.dropna()
 
@@ -68,9 +66,7 @@ def clean_and_engineer_data(df):
 
     return df
 
-# -------------------------------
 # Load Dataset
-# -------------------------------
 df = pd.read_csv("Bengaluru_House_Data.csv")
 
 # Rename target column to match pipeline
@@ -106,9 +102,7 @@ df = df.dropna(subset=['total_sqft'])
 # Clean + Engineer
 df = clean_and_engineer_data(df)
 
-# -------------------------------
 # Model Training
-# -------------------------------
 X = df.drop(['Price'], axis=1)
 X = pd.get_dummies(X, columns=['location'], drop_first=True)
 y = df['Price']
@@ -130,31 +124,25 @@ print("Random Forest MAE:", mean_absolute_error(y_test, y_pred_rf))
 cv_scores = cross_val_score(rf, X, y, cv=5)
 print("Random Forest Cross-val Accuracy:", np.mean(cv_scores))
 
-# -------------------------------
-# Prediction Function
-# -------------------------------
+# Prediction
 def predict_price(location, sqft, bhk, bath, model=rf):
-    # Create input row
     x = pd.DataFrame([[sqft, bhk, bath, bath/bhk, location]],
                      columns=['total_sqft','BHK','bath','bath_per_bhk','location'])
     
-    # Encode location
     x = pd.get_dummies(x, columns=['location'], drop_first=True)
 
-    # Align with training columns
     x = x.reindex(columns=X.columns, fill_value=0)
 
     # Predict
     return model.predict(x)[0]
 
-# Example usage:
 print("\nExample Prediction:")
 print("Price prediction (Whitefield, 1200 sqft, 2 BHK, 2 bath) →",
       predict_price("Whitefield", 1200, 2, 2), "Lakhs")
 
 import joblib
 joblib.dump(rf, "model.pkl")
-# Save training columns
+
 joblib.dump(list(X.columns), "model_columns.pkl")
 
 # Save unique locations
